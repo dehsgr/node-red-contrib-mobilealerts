@@ -15,10 +15,8 @@ var MA10320_HUMIDITY = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[
 var MA10350_TEMPERATURE = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
 var MA10350_HUMIDITY = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[%]?<\\/h4>';
 var MA10350_LEAK = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)<\\/h4>';
-var MA10650_RAIN = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4(.*?)[ mm]?<\\/h4>';
-var MA10660_WINDSPEED = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4(\\d.\\d).*?<\\/h4>';
-var MA10660_SQUALL = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4(\\d.\\d).*?<\\/h4>';
-var MA10660_WINDDIRECTION = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4([\\w]*).*?<\\/h4>';
+var MA10650_RAIN = '.*?(<h4>%SERIAL%<\\/h4>)[\\s\\S]*?<h4>(.*?)<\\/h4>[\\s\\S]*?<h4>(.*?) mm<\\/h4>';
+var MA10660_WIND = '(<h4>%SERIAL%<\\/h4>)[\\s\\S]*?<h4>(.*?)<\\/h4>[\\s\\S]*?<h4>(.*?) m\\/s<\\/h4>[\\s\\S]*?<h4>(.*?) m\\/s<\\/h4>[\\s\\S]*?<h4>(.*?)<\\/h4>';
 var MA10700_TEMPERATURE = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
 var MA10700_TEMPERATURE_CABLE = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
 var MA10700_HUMIDITY = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[%]?<\\/h4>';
@@ -111,7 +109,7 @@ module.exports = function(RED) {
 		
 		for (var s in sa) {						// iterate each sensor.
 			p = { name: sa[s], serial: s };
-			t = parseInt(s.substr(0, 2));
+			t = parseInt('0x' + s.substr(0, 2));
 			switch (t) {
 				case Platform.DeviceTypes.MA10006:
 					p.temperature = parseFloat(new RegExp(MA10006_TEMPERATURE_INSIDE.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
@@ -157,14 +155,16 @@ module.exports = function(RED) {
 					break;
 		
 				case Platform.DeviceTypes.MA10650:
-					p.rain = parseFloat(new RegExp(MA10650_RAIN.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
+					var pa = new RegExp(MA10650_RAIN.replace(/%SERIAL%/gi, s), 'gi').exec(myData);
+					p.rain = parseFloat(pa[3].replace(',', '.'));
 					p.active = !isNaN(p.rain);
 					break;
 					
 				case Platform.DeviceTypes.MA10660:
-					p.windspeed = parseFloat(new RegExp(MA10660_WINDSPEED.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
-					p.squall = parseFloat(new RegExp(MA10660_SQUALL.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
-					p.winddirection = parseFloat(new RegExp(MA10660_WINDDIRECTION.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
+					var pa = new RegExp(MA10660_WIND.replace(/%SERIAL%/gi, s), 'gi').exec(myData);
+					p.windspeed = parseFloat(pa[3].replace(',', '.'));
+					p.squall = parseFloat(pa[4].replace(',', '.'));
+					p.winddirection = pa[5];
 					p.active = !isNaN(p.windspeed);
 					break;
 
