@@ -15,6 +15,14 @@ var MA10320_HUMIDITY = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[
 var MA10350_TEMPERATURE = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
 var MA10350_HUMIDITY = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[%]?<\\/h4>';
 var MA10350_LEAK = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)<\\/h4>';
+var MA10421_TEMPERATURE = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
+var MA10421_TEMPERATURE_1 = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
+var MA10421_TEMPERATURE_2 = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
+var MA10421_TEMPERATURE_3 = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
+var MA10421_HUMIDITY = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[%]?<\\/h4>';
+var MA10421_HUMIDITY_1 = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[%]?<\\/h4>';
+var MA10421_HUMIDITY_2 = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[%]?<\\/h4>';
+var MA10421_HUMIDITY_3 = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[%]?<\\/h4>';
 var MA10650_RAIN = '.*?(<h4>%SERIAL%<\\/h4>)[\\s\\S]*?<h4>(.*?)<\\/h4>[\\s\\S]*?<h4>(.*?) mm<\\/h4>';
 var MA10660_WIND = '(<h4>%SERIAL%<\\/h4>)[\\s\\S]*?<h4>(.*?)<\\/h4>[\\s\\S]*?<h4>(.*?) m\\/s<\\/h4>[\\s\\S]*?<h4>(.*?) m\\/s<\\/h4>[\\s\\S]*?<h4>(.*?)<\\/h4>';
 var MA10700_TEMPERATURE = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
@@ -58,7 +66,7 @@ module.exports = function(RED) {
 
 	// ~~~ enums ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	MobileAlerts.prototype.DeviceTypes = { MA10120: 1, MA10100: 2, MA10200: 3, MA10350: 4, MA10700: 6, MA10006: 7, MA10650: 8, MA10320: 9, MA10660: 11 };
+	MobileAlerts.prototype.DeviceTypes = { MA10120: 1, MA10100: 2, MA10200: 3, MA10350: 4, MA10700: 6, MA10006: 7, MA10650: 8, MA10320: 9, MA10660: 11, MA10421: 17 };
 	MobileAlerts.prototype.MatchTypes = { Name: 1, Serial: 2 };
 
 	// ~~~ functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -154,6 +162,21 @@ module.exports = function(RED) {
 					p.active_leak = !isNaN(p.leak);
 					break;
 		
+				case Platform.DeviceTypes.MA10421:
+					p.temperature = parseFloat(new RegExp(MA10421_TEMPERATURE.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
+					p.humidity = parseFloat(new RegExp(MA10421_HUMIDITY.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
+					p.temperature_1 = parseFloat(new RegExp(MA10421_TEMPERATURE_1.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
+					p.humidity_1 = parseFloat(new RegExp(MA10421_HUMIDITY_1.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
+					p.temperature_2 = parseFloat(new RegExp(MA10421_TEMPERATURE_2.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
+					p.humidity_2 = parseFloat(new RegExp(MA10421_HUMIDITY_2.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
+					p.temperature_3 = parseFloat(new RegExp(MA10421_TEMPERATURE_3.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
+					p.humidity_3 = parseFloat(new RegExp(MA10421_HUMIDITY_3.replace(/%SERIAL%/gi, s), 'gi').exec(myData)[1].replace(',', '.'));
+					p.active = !isNaN(p.temperature);
+					p.active_1 = !isNaN(p.temperature_1);
+					p.active_2 = !isNaN(p.temperature_2);
+					p.active_3 = !isNaN(p.temperature_3);
+					break;
+
 				case Platform.DeviceTypes.MA10650:
 					var pa = new RegExp(MA10650_RAIN.replace(/%SERIAL%/gi, s), 'gi').exec(myData);
 					p.rain = parseFloat(pa[3].replace(',', '.'));
