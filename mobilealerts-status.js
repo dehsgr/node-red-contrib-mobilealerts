@@ -1,6 +1,6 @@
 // ~~~ constants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-var SENSOR_DATA	= '(<div class="panel panel-default">.*)<div class="nofloat"><\\/div>';
+var SENSOR_DATA	= '(<div class="panel panel-default">.*)<hr \\/>';
 var SENSOR_ITEM = '<div class="panel panel-default">.*?<\\/div>\\s*?<\\/div>\\s*?<\\/div>\\s*?<\\/div>';
 var SENSOR_NAME	= '<a.*?>(.*?)<';
 var SENSOR_PART = '<div class="sensor-component">.*?<h5>(.*?)<\\/h5>.*?<h4>(.*?)<\\/h4>.*?<\\/div>';
@@ -131,7 +131,7 @@ module.exports = function(RED) {
 			pt = new RegExp(SENSOR_PART, 'gis');
 			pd = pt.exec(id)
 			while (pd !== null) {
-				m = /(\d+[,.]*\d+)\s*([CF%])/gis.exec(pd[2]);
+				m = /(\d+[,.]*\d+)\s*([CF%]|mm|km\/h|mph|kph)/gis.exec(pd[2]);
 				pl[Platform.cleanName(pd[1])] = m ?
 					{
 						Value: parseFloat(m[1].replace(/,/, '.')),
