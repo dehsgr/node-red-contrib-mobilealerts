@@ -1,5 +1,12 @@
 // ~~~ constants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+var SENSOR_DATA	= '(<div class="panel panel-default">.*)<div class="nofloat"><\\/div>';
+var SENSOR_ITEM = '<div class="panel panel-default">.*?<\\/div>\\s*?<\\/div>\\s*?<\\/div>\\s*?<\\/div>';
+var SENSOR_NAME	= '<a.*?>(.*?)<';
+var SENSOR_PART = '<div class="sensor-component">.*?<h5>(.*?)<\\/h5>.*?<h4>(.*?)<\\/h4>.*?<\\/div>';
+
+// ~~~ leagcy constants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 var MA10006_TEMPERATURE_INSIDE = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
 var MA10006_TEMPERATURE_OUTSIDE = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[ C]?<\\/h4>';
 var MA10006_HUMIDITY_INSIDE = '.*?<h4>%SERIAL%[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<\\/h5>[\\s\\S]*?.*?<h4>(.*?)[%]?<\\/h4>';
@@ -43,6 +50,7 @@ module.exports = function(RED) {
 	
 		this.mobilealertsid = myNode.mobilealertsid;
 		this.interval = parseInt(myNode.interval);
+		this.legacy = myNode.legacy;
 
 		function publishStates()
 		{
@@ -64,7 +72,7 @@ module.exports = function(RED) {
 
 	RED.nodes.registerType('mobilealerts-status', MobileAlerts);
 
-	// ~~~ enums ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ~~~ legacy enums ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	MobileAlerts.prototype.DeviceTypes = { MA10120: 1, MA10100: 2, MA10200: 3, MA10350: 4, MA10700: 6, MA10006: 7, MA10650: 8, MA10320: 9, MA10660: 11, MA10230: 12, MA10421: 17, MA10232: 18 };
 	MobileAlerts.prototype.MatchTypes = { Name: 1, Serial: 2 };
@@ -85,12 +93,78 @@ module.exports = function(RED) {
 			if(myError) {
 				Platform.warn('There was an Error requesting initial Data for Sensor-Matching: ' + myError);
 			} else {
-				Platform.parseSensorData(myResponse.body);
+				if (!Platform.legacy) {
+					Platform.parseSensorData(myResponse.body);
+				} else {
+					if (Platform.legacy) {
+						Platform.warn('You\'ve activated legacy Mode for parsing and returning your Mobile Alerts Data. This Function is deprecated and will be removed later. So you should switch to new Mode as soon as possible!');
+					}
+
+					Platform.parseSensorDataLegacy(myResponse.body);
+				}
 			}
 		});
 	}
-	
+
 	MobileAlerts.prototype.parseSensorData = function(myData)
+	{
+		var Platform = this;
+
+		var dt;		// data
+		var it;		// item
+		var id;		// item data
+		var pt;		// part
+		var pd;		// part data
+		var pl;		// payload
+		var m;		// matches
+
+		Platform.log('Parsing Sensor Data...');
+
+		dt = new RegExp(SENSOR_DATA, 'gis').exec(myData)[1];
+		it = new RegExp(SENSOR_ITEM, 'gis');
+		id = it.exec(dt);
+		while(id !== null) {
+			id = id[0];
+
+			pl = { Name: new RegExp(SENSOR_NAME, 'gis').exec(id)[1] };
+
+			pt = new RegExp(SENSOR_PART, 'gis');
+			pd = pt.exec(id)
+			while (pd !== null) {
+				m = /(\d+[,.]*\d+)\s*([CF%])/gis.exec(pd[2]);
+				pl[Platform.cleanName(pd[1])] = m ?
+					{
+						Value: parseFloat(m[1].replace(/,/, '.')),
+						Unit: m[2]
+					} :
+					pd[2];
+				pd = pt.exec(id)
+			}
+
+			Platform.send({ payload: pl });
+
+			id = it.exec(dt);
+		}
+	}
+
+	MobileAlerts.prototype.cleanName = function(myData)
+	{
+		myData = myData.replace(/&#228;/g, 'ä');
+		myData = myData.replace(/&#246;/g, 'ö');
+		myData = myData.replace(/&#252;/g, 'ü');
+		myData = myData.replace(/&#196;/g, 'Ä');
+		myData = myData.replace(/&#214;/g, 'Ö');
+		myData = myData.replace(/&#220;/g, 'Ü');
+		myData = myData.replace(/&#223;/g, 'ß');
+		myData = myData.replace(/\./g, '_');
+		myData = myData.replace(/ /g, '_');
+
+		return myData;
+	}
+
+	// ~~~ legacy functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	MobileAlerts.prototype.parseSensorDataLegacy = function(myData)
 	{
 		var Platform = this;
 
@@ -102,7 +176,7 @@ module.exports = function(RED) {
 		var t;		// type
 		var p;		// payload
 		
-		Platform.log('Parsing Sensor Data...');
+		Platform.log('Parsing Sensor Data (legacy Mode)...');
 
 		sa = [];
 		r = /.*?sensor-header[\s\S]*?.*?<a href.*?>(.*?)<\/a>[\s\S]*?.*?<h4>(.*?)<\/h4>/gi;

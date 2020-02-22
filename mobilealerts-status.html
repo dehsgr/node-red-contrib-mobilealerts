@@ -4,7 +4,14 @@
 		defaults: {	
 			name: { value: ''},
 			mobilealertsid: { value: '', required: true },
-			interval: { value: '', required: true }
+			interval: {
+				value: '420',
+				required: true,
+				validate: function (myValue) {
+                    return RED.validators.number(myValue) && myValue > 0;
+				}
+			},
+			legacy: { value: true, type: 'boolean' }
 		},
 		inputs: 0,			// set the number of inputs - only 0 or 1
 		outputs: 1,			// set the number of outputs - 0 to n
@@ -29,8 +36,12 @@
 	</div>	
 	<div class="form-row">
 		<label for="node-input-interval"><i class="fa fa-tag"></i> Interval</label>
-		<input type="text" id="node-input-interval" placeholder="">
+		<input type="text" id="node-input-interval" placeholder="420 is a good default Value!">
 	</div>	
+	<div class="form-row">
+		<label for="node-input-legacy" style="white-space: nowrap;"><i class="fa fa-tag"></i> Legacy Mode</label>
+		<input type="checkbox" id="node-input-legacy">
+	</div>
 </script>
 
 <!-- Simple Help Text -->

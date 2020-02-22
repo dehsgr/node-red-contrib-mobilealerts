@@ -3,6 +3,33 @@
 This provides a node for receiving Mobile Alerts status infos. node-red-contrib-mobilealerts delivers 1 node:
 
 ## Mobile Alerts Status
-Mobile Alerts Status periodically polls the status from Mobile Alerts servers. The interval in seconds can be set. It returns the name of the sensor, the serial of the sensor, the active state(s) of the sensor, and all of its data.
+Mobile Alerts Status periodically polls the status from Mobile Alerts servers. The interval in seconds can be set. It returns the name of the sensor, the ID (serial) of the sensor, and all other data available on https://measurements.mobile-alerts.eu. All payloads are build with their localized parameter names. All parameter values in numeric format (such as temperature and humidity) are returend as object consisting of their value and unit.
+
 Mobile Alerts Status will send a message per sensor. the msg.payload looks like:
-`{ name: "mySensor", serial: "ABCDEF0123456789", temperature: 25.5, humidity: 54, temperature_out: 28.8, humidity_out: 45, active: true, active_out: true }`
+
+
+`{
+	Name: "mySensor",
+	ID: "ABCDEF01234",
+	Time: "2020/02/22 22:00:24",
+	Temperature_In: {
+		Value: 22.5,
+		Unit: "C"
+	}, 
+	Humidity_In: {
+		Value: "45",
+		Unit: "%"
+	},
+	Temperature_Out: {
+		Value: 7.8,
+		Unit: "C"
+	}, 
+	Humidity_Out: {
+		Value: "83",
+		Unit: "%"
+	}
+}`
+
+## ATTENTION!
+********** VERSION 2 BREAKS DOWNWARD COMPATIBILITY! **********
+I'm sure that there are enough people using this project and they would be displeased seing their configuration and/or systems broken. So I decided to warn them about deprecated (legacy v1) API. Further legacy mode is activated by default. I recommend everyone to upgrade to new functionality as soon as possible as I won't give any guarantee that legacy mode is available next few updates anymore.
