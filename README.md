@@ -32,4 +32,5 @@ Mobile Alerts Status will send a message per sensor. the msg.payload looks like:
 
 ## ATTENTION!
 ********** VERSION 2 BREAKS DOWNWARD COMPATIBILITY! **********
+
 I'm sure that there are enough people using this project and they would be displeased seing their configuration and/or systems broken. So I decided to warn them about deprecated (legacy v1) API. Further legacy mode is activated by default. I recommend everyone to upgrade to new functionality as soon as possible as I won't give any guarantee that legacy mode is available next few updates anymore.
