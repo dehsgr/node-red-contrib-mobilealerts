@@ -181,16 +181,16 @@ module.exports = function(RED) {
 
 				case Platform.DeviceTypes.MA10650:
 					var pa = new RegExp(MA10650_RAIN.replace(/%SERIAL%/gi, s), 'gi').exec(myData);
-					p.rain = (pa.length >=4) ? parseFloat(pa[3].replace(',', '.')) : 0.0;
-					p.active = !isNaN(p.rain);
+					p.rain = pa ? parseFloat(pa[3].replace(',', '.')) : 0.0;
+					p.active = (pa != undefined);
 					break;
 					
 				case Platform.DeviceTypes.MA10660:
 					var pa = new RegExp(MA10660_WIND.replace(/%SERIAL%/gi, s), 'gi').exec(myData);
-					p.windspeed = parseFloat(pa[3].replace(',', '.'));
-					p.squall = parseFloat(pa[4].replace(',', '.'));
-					p.winddirection = pa[5];
-					p.active = !isNaN(p.windspeed);
+					p.windspeed = pa ? parseFloat(pa[3].replace(',', '.')) : 0.0;
+					p.squall = pa ? parseFloat(pa[4].replace(',', '.')) : 0.0;
+					p.winddirection = pa ? pa[5] : 'unknown';
+					p.active = (pa != undefined);
 					break;
 
 				case Platform.DeviceTypes.MA10700:
