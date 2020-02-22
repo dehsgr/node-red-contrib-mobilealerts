@@ -181,7 +181,7 @@ module.exports = function(RED) {
 
 				case Platform.DeviceTypes.MA10650:
 					var pa = new RegExp(MA10650_RAIN.replace(/%SERIAL%/gi, s), 'gi').exec(myData);
-					p.rain = parseFloat(pa[3].replace(',', '.'));
+					p.rain = (pa.length >=4) ? parseFloat(pa[3].replace(',', '.')) : 0.0;
 					p.active = !isNaN(p.rain);
 					break;
 					
