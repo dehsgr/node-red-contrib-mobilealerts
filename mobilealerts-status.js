@@ -126,16 +126,16 @@ module.exports = function(RED) {
 		while(id !== null) {
 			id = id[0];
 
-			pl = { Name: new RegExp(SENSOR_NAME, 'gis').exec(id)[1] };
+			pl = { Name: Platform.cleanName(new RegExp(SENSOR_NAME, 'gis').exec(id)[1], true) };
 
 			pt = new RegExp(SENSOR_PART, 'gis');
 			pd = pt.exec(id)
 			while (pd !== null) {
-				m = /(\d+[,.]*\d+)\s*([CF%]|mm|km\/h|mph|kph)/gis.exec(pd[2]);
+				m = /(\d+[,.]*\d+)\s*(%| C| F|mm|km\/h|mph|kph)/gis.exec(pd[2]);
 				pl[Platform.cleanName(pd[1])] = m ?
 					{
 						Value: parseFloat(m[1].replace(/,/, '.')),
-						Unit: m[2]
+						Unit: m[2].replace(/ /, '')
 					} :
 					pd[2];
 				pd = pt.exec(id)
@@ -147,7 +147,7 @@ module.exports = function(RED) {
 		}
 	}
 
-	MobileAlerts.prototype.cleanName = function(myData)
+	MobileAlerts.prototype.cleanName = function(myData, onlyUmlauts)
 	{
 		myData = myData.replace(/&#228;/g, 'ä');
 		myData = myData.replace(/&#246;/g, 'ö');
@@ -156,8 +156,11 @@ module.exports = function(RED) {
 		myData = myData.replace(/&#214;/g, 'Ö');
 		myData = myData.replace(/&#220;/g, 'Ü');
 		myData = myData.replace(/&#223;/g, 'ß');
-		myData = myData.replace(/\./g, '_');
-		myData = myData.replace(/ /g, '_');
+		
+		if (!onlyUmlauts) {
+			myData = myData.replace(/\./g, '_');
+			myData = myData.replace(/ /g, '_');
+		}
 
 		return myData;
 	}
