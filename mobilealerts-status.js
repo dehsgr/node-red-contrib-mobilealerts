@@ -120,7 +120,13 @@ module.exports = function(RED) {
 
 		Platform.log('Parsing Sensor Data...');
 
-		dt = new RegExp(SENSOR_DATA, 'gis').exec(myData)[1];
+		dt = new RegExp(SENSOR_DATA, 'gis').exec(myData);
+		if (!dt || dt.length < 2) {
+			Platform.warn('Did not get valid Data. Server might me down!');
+		} else {
+			dt = dt[1];
+		}
+
 		it = new RegExp(SENSOR_ITEM, 'gis');
 		id = it.exec(dt);
 		while(id !== null) {
