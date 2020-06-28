@@ -29,8 +29,3 @@ Mobile Alerts Status will send a message per sensor. the msg.payload looks like:
 		Unit: "%"
 	}
 }`
-
-## ATTENTION!
-********** VERSION 2 BREAKS DOWNWARD COMPATIBILITY! **********
-
-I'm sure that there are enough people using this project and they would be displeased seing their configuration and/or systems broken. So I introduced a new legacy mode. This mode should be activated by default (setting can be changed in node configuration). When using this legacy mode you are warned about using deprecated (legacy/v1) API. I recommend everyone to upgrade to new functionality as soon as possible as I won't give any guarantee that legacy mode is available next few updates anymore.
