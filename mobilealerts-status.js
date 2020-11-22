@@ -92,7 +92,7 @@ module.exports = function(RED) {
 			pt = new RegExp(SENSOR_PART, 'gis');
 			pd = pt.exec(id)
 			while (pd !== null) {
-				m = /(\d+[,.]*\d+)\s*(%| C| F|mm|km\/h|mph|kph)/gis.exec(pd[2]);
+				m = /(\-?\d+[,.]*\d+)\s*(%| C| F|mm|km\/h|mph|kph)/gis.exec(pd[2]);
 				pl[Platform.cleanName(pd[1])] = m ?
 					{
 						Value: parseFloat(m[1].replace(/,/, '.')),
