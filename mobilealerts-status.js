@@ -22,7 +22,7 @@ module.exports = function(RED) {
 
 		function publishStates()
 		{
-			Platform.fetchData('http://measurements.mobile-alerts.eu/Home/SensorsOverview?phoneid=' + Platform.mobilealertsid);
+			Platform.fetchData('measurements.mobile-alerts.eu', Platform.mobilealertsid);
 		}
 
 		publishStates();
@@ -42,16 +42,20 @@ module.exports = function(RED) {
 
 	// ~~~ functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	MobileAlerts.prototype.fetchData = function(myURL) {
+	MobileAlerts.prototype.fetchData = function(myServer, myID) {
 		var Platform = this;
 		var r;
 
 		Platform.log('Fetching Data...');
 
 		require('request')({
-			method: 'GET',
-			url: myURL,
-			headers: {}
+			method: 'POST',
+			url: 'https://' + myServer + '/',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'User-Agent': 'MobileAlertsFetcher/1.0'
+			},
+			body: 'phoneid=' + myID
 		}, function(myError, myResponse) {
 			if(myError) {
 				Platform.warn('There was an Error requesting initial Data for Sensor-Matching: ' + myError);
