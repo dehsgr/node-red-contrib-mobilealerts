@@ -53,14 +53,33 @@ module.exports = function(RED) {
 			url: 'https://' + myServer + '/',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
-				'User-Agent': 'MobileAlertsFetcher/1.0'
+				'User-Agent': 'MobileAlertsPleaseProvideOfficialAPI4ALL/1.0'
 			},
 			body: 'phoneid=' + myID
 		}, function(myError, myResponse) {
 			if(myError) {
 				Platform.warn('There was an Error requesting initial Data for Sensor-Matching: ' + myError);
 			} else {
-				Platform.parseSensorData(myResponse.body);
+				switch (myResponse.statusCode)
+				{
+					case 403:
+						Platform.error(
+							'We were locked out from Mobile Alerts Team again! ' +
+							'Thank you guys for not providing an adequate public API' +
+							'for all users and sensors! :-('
+						);
+						break;
+
+					case 200:
+						Platform.parseSensorData(myResponse.body);
+						break;
+					
+					default:
+						Platform.warn(
+							'There was an unexpected response code from the server: ' +
+							myResponse.statusCode + ' (myResponse.body)'
+						);
+				}
 			}
 		});
 	}
