@@ -52,8 +52,6 @@ module.exports = {
 		body += '&speedunit=' + myPlatform.Wind;										// wind speed (0: m/s, 1: km/h, 2: mph, 3: kn)
 		body += '&timestamp=' + parseInt(new Date(new Date().toUTCString()) / 1000); 	// current UTC timestamp
 		
-		console.log(body);
-
 		var md5 = body + 'uvh2r1qmbqk8dcgv0hc31a6l8s5cnb0ii7oglpfj'						// SALT for the MD5
 		md5 = md5.replace(/\-/gi, '');
 		md5 = md5.replace(/\,/gi, '');
