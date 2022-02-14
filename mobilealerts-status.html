@@ -2,7 +2,7 @@
 	RED.nodes.registerType('mobilealerts-status', {
 		category: 'MobileAlerts',
 		defaults: {	
-			name: { value: ''},
+			name: { value: '' },
 			mobilealertsid: { value: '', required: true },
 			interval: {
 				value: '420',
@@ -10,7 +10,12 @@
 				validate: function (myValue) {
                     return RED.validators.number(myValue) && myValue > 0;
 				}
-			}
+			},
+			clock: { value: 0 },
+			temperature: { value: 0 },
+			rain: { value: 0 },
+			wind: { value: 0 },
+			devices: { value: {} }
 		},
 		inputs: 0,			// set the number of inputs - only 0 or 1
 		outputs: 1,			// set the number of outputs - 0 to n
@@ -19,24 +24,199 @@
 		label: function() {
 			return this.name || "Mobile Alerts Status";
 		},
-		paletteLabel: "Status"
+		paletteLabel: "Status",
+		oneditprepare: function() {
+			const _self = this;
+
+			if (!_self.devices) {
+				_self.devices = {};
+			}
+
+			var sa =[];
+			for (var device in _self.devices) {
+				if (this.devices.hasOwnProperty(device)) {
+					var d = _self.devices[device];
+					AddSerial(d.serial);
+					sa.push(d.serial);
+				}
+			}
+
+			if (sa.length > 0) {
+				$.getJSON('devices',function(myData) {
+					for (var i = 0; i < sa.length; i++) {
+						var d = myData[sa[i]];
+						if (d) {
+							$('#' + d.serial + '-row > span').html(
+								d.name + '<br />(' + d.serial + ')'
+							);
+						}
+					}
+				});
+			}
+
+			function AddSerial(mySerial) {
+				if (!mySerial.length || $('#' + mySerial + '-row').length > 0) {
+					return;
+				}
+
+				$('#node-input-devices').append('<div class="device" id="' + mySerial + '-row" data-serial="' + mySerial + '"><span>' + mySerial + '</span><button id="' + mySerial + '-remove">Remove</button></div>');
+				$('#' + mySerial + '-remove').click(() => {
+					RemoveSerial(mySerial);
+				});
+
+				_self.devices[mySerial] = { 'serial': mySerial };
+			}
+
+			function RemoveSerial(mySerial) {
+				$('#' + mySerial + '-row').remove();
+				_self.devices[mySerial] = undefined;
+			}
+
+			$('#node-input-add').click(() => {
+				const element = $('#node-input-serial');
+
+				AddSerial(element.val());
+				element.val('');
+			});
+
+			$('input[type="radio"]').each(function () {
+				const e = $(this);
+				const id = e.attr('name');
+				const i = _self[id];
+
+				e.attr('checked', $('input[name="' + id + '"]').index(e) === (i || 0));
+			});
+		},
+		oneditsave: function() {
+			const _self = this;
+			const devices = {};
+
+			$('.device').each(function () {
+				const id = $(this).data('serial');
+				if (!devices[id]) {
+					devices[id] = { 'serial': id };
+				}
+			});
+
+			_self.devices = devices;
+
+			$('input[type="radio"]:checked').each(function () {
+				const e = $(this);
+				const id = e.attr('name');
+				
+				console.log($('input[name="' + id + '"]').index(e));
+				_self[id] = $('input[name="' + id + '"]').index(e);
+			});
+		}
 	});
 </script>
 
 <!-- Setting design and inputs for node -->
 <script type="text/x-red" data-template-name="mobilealerts-status">
+	<style>
+		.deviceeditor input[type="text"] {
+			width: 55%;
+		}
+
+		.deviceeditor button {
+			width: 14%;
+			height: 34px;
+		}
+
+		#devices {
+			width: 100%;
+		}
+
+		.device {
+			display: flex;
+			justify-content: space-between;
+			width: 70%;
+			padding: 6px;
+			padding-left: 106px;
+		}
+
+		.device > button {
+			margin-right: 3px;
+		}
+
+		.folded {
+			width: auto !important;
+			margin: 0px !important;
+		}
+
+		.v-centered {
+			vertical-align: baseline;
+		}
+
+		.v-centered > th:first-child {
+			width: 100px;
+			text-align: left;
+			padding-left: 0px;
+		}
+
+		.v-centered > td {
+			padding-right: 20px !important;
+		}
+
+		.v-centered > th, .v-centered > td {
+			padding: 4px;
+		}
+
+		.v-centered > td > input {
+			margin-bottom: 2px !important;
+		}
+
+		.note {
+			margin-top: 10px;
+			font-style: italic;
+			color: red; 
+		}
+	</style>
 	<div class="form-row">
 		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-		<input type="text" id="node-input-name" placeholder="e.g. Mobile Alerts">
+		<input type="text" id="node-input-name" placeholder="e.g. Mobile Alerts" />
 	</div>	
 	<div class="form-row">
 		<label for="node-input-mobilealertsid"><i class="fa fa-tag"></i> MA-ID</label>
-		<input type="text" id="node-input-mobilealertsid" placeholder="e.g. ABCDEF012345678">
+		<input type="text" id="node-input-mobilealertsid" placeholder="Phone ID e.g. 123456789012" />
 	</div>	
 	<div class="form-row">
 		<label for="node-input-interval"><i class="fa fa-tag"></i> Interval</label>
-		<input type="text" id="node-input-interval" placeholder="420 is a good default Value!">
+		<input type="text" id="node-input-interval" placeholder="420 is a good default Value!" />
 	</div>	
+	<hr />
+	<table>
+		<tr class="v-centered">
+			<th><label><i class="fa fa-tag"></i> Clock</label></th>
+			<td><input type="radio" id="node-input-24h" name="clock" class="folded" /> 24h</td>
+			<td><input type="radio" id="node-input-ampm" name="clock" class="folded" colspan="3" /> AM/PM</td>
+		</tr>
+		<tr class="v-centered">
+			<th><label><i class="fa fa-tag"></i> Temperature</label></th>
+			<td><input type="radio" id="node-input-celsius" name="temperature" class="folded" /> °C</td>
+			<td><input type="radio" id="node-input-fahrenheit" name="temperature" class="folded" colspan="3" /> °F</td>
+		</tr>
+		<tr class="v-centered">
+			<th><label><i class="fa fa-tag"></i> Rain</label></th>
+			<td><input type="radio" id="node-input-mm" name="rain" class="folded" /> mm</td>
+			<td><input type="radio" id="node-input-in" name="rain" class="folded" colspan="3" /> in</td>
+		</tr>
+		<tr class="v-centered">
+			<th><label><i class="fa fa-tag"></i> Wind</label></th>
+			<td><input type="radio" id="node-input-ms" name="wind" class="folded" /> m/s</td>
+			<td><input type="radio" id="node-input-kmh" name="wind" class="folded" /> km/h</td>
+			<td><input type="radio" id="node-input-mph" name="wind" class="folded" /> mph</td>
+			<td><input type="radio" id="node-input-kn" name="wind" class="folded" /> kn</td>
+		</tr>
+	</table>
+	<div class="note">These options should be set according to your app settings!</div>
+	<hr />
+	<div class="form-row deviceeditor">
+		<label for="node-input-devices"><i class="fa fa-tag"></i> Devices</label>
+		<input type="text" id="node-input-serial" placeholder="Device Serial e.g. 0123456789AB" />
+		<button id="node-input-add">Add</button>
+	</div>
+	<div id="node-input-devices" />
 </script>
 
 <!-- Simple Help Text -->

@@ -1,35 +1,64 @@
-// ~~~ constants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-var SENSOR_DATA	= '(<div class="panel panel-default">.*)<hr \\/>';
-var SENSOR_ITEM = '<div class="panel panel-default">.*?<\\/div>\\s*?<\\/div>\\s*?<\\/div>\\s*?<\\/div>';
-var SENSOR_NAME	= '<a.*?>(.*?)<';
-var SENSOR_PART = '<div class="sensor-component">.*?<h5>(.*?)<\\/h5>.*?<h4>(.*?)<\\/h4>.*?<\\/div>';
-
 module.exports = function(RED) {
 	'use strict';
 
-	// ~~~ constructor / destructor ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ~~~ constants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	const API = require('./mobilealerts-api.js');
+
+	const SENSOR_DATA	= '(<div class="panel panel-default">.*)<hr \\/>';
+	const SENSOR_ITEM = '<div class="panel panel-default">.*?<\\/div>\\s*?<\\/div>\\s*?<\\/div>\\s*?<\\/div>';
+	const SENSOR_NAME	= '<a.*?>(.*?)<';
+	const SENSOR_PART = '<div class="sensor-component">.*?<h5>(.*?)<\\/h5>.*?<h4>(.*?)<\\/h4>.*?<\\/div>';
+
+	// ~~~ fields ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	let Platform = this;
+
+	// ~~~ constructor / destructor ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	function MobileAlerts(myNode)
 	{
 		RED.nodes.createNode(this, myNode);
 
-		var Platform = this;
+		Platform = this;
 		var Loop;
 	
-		this.mobilealertsid = myNode.mobilealertsid;
-		this.interval = parseInt(myNode.interval);
+		this.PhoneID = myNode.mobilealertsid;
+		this.Interval = parseInt(myNode.interval);
+		this.Devices = myNode.devices;
+		this.Clock = myNode.clock;
+		this.Temperature = myNode.temperature;
+		this.Rain = myNode.rain;
+		this.Wind = myNode.wind;
 
 		function publishStates()
 		{
-			Platform.fetchData('measurements.mobile-alerts.eu', Platform.mobilealertsid);
+			var sa = [];
+			for (var Device in Platform.Devices) {
+				if (Platform.Devices.hasOwnProperty(Device)) {
+					sa.push(Platform.Devices[Device].serial);
+				}
+			}
+
+			if (!sa.length) {
+				Platform.warn(
+					'No Device Serial Numbers specified to query. Using depricated Mechanism to fetch Data. ' +
+					'You should upgrade to new Functionality specifying Device Serials to query! ' +
+					'Migration is necessary because deprocated Mechanism will be removed from this Plugin later. ' +
+					'Keep in Mind that Migration will break current Processing because there are Changes to Attribute Names.'
+				);
+				API.fetchDataLegacy('measurements.mobile-alerts.eu', Platform.PhoneID, Platform.parseSensorDataLegacy);
+				return;
+			}
+
+			API.fetchData(Platform, sa, Platform.parseSensorData);
 		}
 
 		publishStates();
 
 		Loop = setInterval(function() {
 			publishStates();
-		}, Platform.interval * 1000);   // trigger every defined secs
+		}, Platform.Interval * 1000);   // trigger every defined secs
 
 		Platform.on("close", function() {
 			if (Loop) {
@@ -40,54 +69,40 @@ module.exports = function(RED) {
 
 	RED.nodes.registerType('mobilealerts-status', MobileAlerts);
 
-	// ~~~ functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	MobileAlerts.prototype.fetchData = function(myServer, myID) {
-		var Platform = this;
-		var r;
-
-		Platform.log('Fetching Data...');
-
-		require('request')({
-			method: 'POST',
-			url: 'https://' + myServer + '/',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'User-Agent': 'MobileAlertsPleaseProvideOfficialAPI4ALL/1.0'
-			},
-			body: 'phoneid=' + myID
-		}, function(myError, myResponse) {
-			if(myError) {
-				Platform.warn('There was an Error requesting initial Data for Sensor-Matching: ' + myError);
-			} else {
-				switch (myResponse.statusCode)
-				{
-					case 403:
-						Platform.error(
-							'We were locked out from Mobile Alerts Team again! ' +
-							'Thank you guys for not providing an adequate public API' +
-							'for all users and sensors! :-('
-						);
-						break;
-
-					case 200:
-						Platform.parseSensorData(myResponse.body);
-						break;
-					
-					default:
-						Platform.warn(
-							'There was an unexpected response code from the server: ' +
-							myResponse.statusCode + ' (myResponse.body)'
-						);
-				}
-			}
-		});
-	}
+	// ~~~ functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	MobileAlerts.prototype.parseSensorData = function(myData)
 	{
-		var Platform = this;
+		if (!myData.success) {
+			Platform.warn('Did not expected data: ' + JSON.stringify(myData));
+			return;
+		}
 
+		Platform.log('Parsing Sensor Data...');
+		
+		var ds = myData.result.devices;
+		for (var i = 0; i < ds.length; i++) {
+			var d = ds[i];
+			Platform.Devices[d.deviceid] = {
+				'serial': d.deviceid,
+				'name': d.name
+			};
+			Platform.send({ payload: d });
+		}
+	}
+
+	RED.httpAdmin.get(
+		"/devices",
+		RED.auth.needsPermission('devices.read'),
+		function(myRequest, myResponse) {
+			myResponse.json(Platform.Devices);
+		}
+	);
+
+	// ~~~ deprecated functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	MobileAlerts.prototype.parseSensorDataLegacy = function(myData)
+	{
 		var dt;		// data
 		var it;		// item
 		var id;		// item data
