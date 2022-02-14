@@ -1,6 +1,6 @@
 {
 	"name": "node-red-contrib-mobilealerts",
-	"version": "3.0.0",
+	"version": "3.0.1",
 	"description": "This provides a node for receiving Mobile Alerts status infos.",
 	"author": "d3h56r",
 	"license": "ISC",
@@ -19,6 +19,6 @@
 	},
 	"dependencies": {
 		"request": "^2.75.0",
-		"utf8": "^3.0.1"
+		"utf8": "^3.0.0"
 	}
 }
