@@ -1,0 +1,65 @@
+[
+	{
+		"id": "49587683.2c9e48",
+		"type": "tab",
+		"label": "Mobile Alerts",
+		"disabled": false,
+		"info": ""
+	},
+	{
+		"id": "8e56b2fd.8d009",
+		"type": "mobilealerts-status",
+		"z": "49587683.2c9e48",
+		"name": "",
+		"mobilealertsid": "123456789012",
+		"interval": "420",
+		"clock": 0,
+		"temperature": 0,
+		"rain": 0,
+		"wind": 0,
+		"devices": {
+			"0123456789AB": {
+				"serial": "0123456789AB"
+			},
+			"0223456789AB": {
+				"serial": "0223456789AB"
+			},
+			"0323456789AB": {
+				"serial": "0323456789AB"
+			},
+			"0423456789AB": {
+				"serial": "0423456789AB"
+			},
+			"0523456789AB": {
+				"serial": "0523456789AB"
+			},
+			"0623456789AB": {
+				"serial": "0623456789AB"
+			}
+		},
+		"x": 110,
+		"y": 40,
+		"wires": [
+			[
+				"6f86f836.d524f8"
+			]
+		]
+	},
+	{
+		"id": "6f86f836.d524f8",
+		"type": "debug",
+		"z": "49587683.2c9e48",
+		"name": "Output all data to debug console...",
+		"active": true,
+		"tosidebar": true,
+		"console": false,
+		"tostatus": false,
+		"complete": "payload",
+		"targetType": "msg",
+		"statusVal": "",
+		"statusType": "auto",
+		"x": 360,
+		"y": 40,
+		"wires": []
+	}
+]
