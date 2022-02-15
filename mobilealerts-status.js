@@ -78,7 +78,7 @@ module.exports = function(RED) {
 			return;
 		}
 
-		Platform.log('Parsing Sensor Data...');
+		Platform.debug('Parsing Sensor Data...');
 		
 		var ds = myData.result.devices;
 		for (var i = 0; i < ds.length; i++) {
@@ -111,7 +111,7 @@ module.exports = function(RED) {
 		var pl;		// payload
 		var m;		// matches
 
-		Platform.log('Parsing Sensor Data...');
+		Platform.debug('Parsing Sensor Data...');
 
 		dt = new RegExp(SENSOR_DATA, 'gis').exec(myData);
 		if (!dt || dt.length < 2) {

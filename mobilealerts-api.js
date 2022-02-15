@@ -76,7 +76,7 @@ module.exports = {
 
 	fetchData: function(myPlatform, mySerials, myCallback)
 	{
-		console.log('Fetching Data...');
+		myPlatform.debug('Fetching Data...');
 
 		request = this.createRequest(myPlatform, mySerials);
 		require('request')(request, function(myError, myResponse) {
@@ -86,7 +86,7 @@ module.exports = {
 				switch (myResponse.statusCode)
 				{
 					case 403:
-						console.error('We were locked out from Mobile Alerts Team!');
+						myPlatform.error('We were locked out from Mobile Alerts Team!');
 						break;
 
 					case 200:
@@ -94,7 +94,7 @@ module.exports = {
 						break;
 					
 					default:
-						console.warn(
+						myPlatform.warn(
 							'There was an unexpected Response from the Server: ' +
 							myResponse.statusCode + ' (myResponse.body)'
 						);
@@ -107,7 +107,7 @@ module.exports = {
 
 	fetchDataLegacy: function(myServer, myID, myCallback)
 	{
-		console.log('Fetching Data...');
+		console.debug('Fetching Data...');
 
 		require('request')({
 			method: 'POST',
