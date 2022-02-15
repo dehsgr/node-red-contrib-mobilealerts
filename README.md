@@ -9,7 +9,7 @@ Mobile Alerts Status will send a message per sensor. the msg.payload looks like:
 
 
 `{
-	"deviceid":"0762B6F6CD9E",
+	"deviceid":"01234567890AB",
 	"devicetypeid":7,
 	"name":"Erdgeschoss",
 	"lang":"de",
@@ -54,9 +54,9 @@ Mobile Alerts Status will send a message per sensor. the msg.payload looks like:
 	"alertevents":[
 		{
 			"idx":3867465,
-			"idxv":"9464F408-4D00-4477-A0E4-D2D4C761A288",
+			"idxv":"9FF4F408-4D00-4477-A0E4-D2D4C761A288",
 			"idxb":"de.synertronixx.remotemonitor",
-			"idxp":"077657060707",
+			"idxp":"987654321098",
 			"ase":true,
 			"ts":1642061642,
 			"tx":14213,
