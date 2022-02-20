@@ -66,7 +66,15 @@ module.exports = {
 		body += '&deviceids=' + mySerials.join(',');
 		body += '&measurementcounts=';
 		for (var i = 0; i < mySerials.length; i++) {
-			body += ((i > 0 ? ',' : '') + '1');
+			switch (parseInt(mySerials[i].substr(0, 2))) {
+				case 0x8:					// rain sensor -> all measurements
+					var f = '';
+					break;
+				
+				default:					// other sensors -> one measurement
+					var f = '1';
+			}
+			body += ((i > 0 ? ',' : '') + f);
 		}
 	
 		request.body = body;															// finalize our request...
