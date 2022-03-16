@@ -8,9 +8,10 @@
 				value: '420',
 				required: true,
 				validate: function (myValue) {
-                    return RED.validators.number(myValue) && myValue > 0;
+					return RED.validators.number(myValue) && myValue > 0;
 				}
 			},
+			language: { value: 'de' },
 			clock: { value: 0 },
 			temperature: { value: 0 },
 			rain: { value: 0 },
@@ -42,7 +43,7 @@
 			}
 
 			if (sa.length > 0) {
-				$.getJSON('devices',function(myData) {
+				$.getJSON('devices', function(myData) {
 					for (var i = 0; i < sa.length; i++) {
 						var d = myData[sa[i]];
 						if (d) {
@@ -85,6 +86,15 @@
 				const i = _self[id];
 
 				e.attr('checked', $('input[name="' + id + '"]').index(e) === (i || 0));
+			});
+
+			_self.language = _self.language || 'de';
+
+			$.getJSON('languages', function(myData) {
+				for (var i = 0; i < myData.length; i++) {
+					var d = myData[i];
+					$('#node-input-language').append('<option value="' + d.code + '"' + (_self.language === d.code ? ' selected' : '') + '>' + d.code + ' (' + d.native + ')</option>');
+				}
 			});
 		},
 		oneditsave: function() {
@@ -187,19 +197,23 @@
 	<hr />
 	<table>
 		<tr class="v-centered">
+			<th><label><i class="fa fa-tag"></i> Language</label></th>
+			<td colspan="4"><select id="node-input-language" name="language" class="folded" /></td>
+		</tr>
+		<tr class="v-centered">
 			<th><label><i class="fa fa-tag"></i> Clock</label></th>
 			<td><input type="radio" id="node-input-24h" name="clock" class="folded" /> 24h</td>
-			<td><input type="radio" id="node-input-ampm" name="clock" class="folded" colspan="3" /> AM/PM</td>
+			<td colspan="3"><input type="radio" id="node-input-ampm" name="clock" class="folded" /> AM/PM</td>
 		</tr>
 		<tr class="v-centered">
 			<th><label><i class="fa fa-tag"></i> Temperature</label></th>
 			<td><input type="radio" id="node-input-celsius" name="temperature" class="folded" /> °C</td>
-			<td><input type="radio" id="node-input-fahrenheit" name="temperature" class="folded" colspan="3" /> °F</td>
+			<td colspan="3"><input type="radio" id="node-input-fahrenheit" name="temperature" class="folded" /> °F</td>
 		</tr>
 		<tr class="v-centered">
 			<th><label><i class="fa fa-tag"></i> Rain</label></th>
 			<td><input type="radio" id="node-input-mm" name="rain" class="folded" /> mm</td>
-			<td><input type="radio" id="node-input-in" name="rain" class="folded" colspan="3" /> in</td>
+			<td colspan="3"><input type="radio" id="node-input-in" name="rain" class="folded" /> in</td>
 		</tr>
 		<tr class="v-centered">
 			<th><label><i class="fa fa-tag"></i> Wind</label></th>

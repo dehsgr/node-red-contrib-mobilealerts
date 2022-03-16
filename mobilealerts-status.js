@@ -22,10 +22,11 @@ module.exports = function(RED) {
 
 		Platform = this;
 		var Loop;
-	
+
 		this.PhoneID = myNode.mobilealertsid;
 		this.Interval = parseInt(myNode.interval);
 		this.Devices = myNode.devices;
+		this.Language = myNode.language;
 		this.Clock = myNode.clock;
 		this.Temperature = myNode.temperature;
 		this.Rain = myNode.rain;
@@ -58,7 +59,7 @@ module.exports = function(RED) {
 
 		Loop = setInterval(function() {
 			publishStates();
-		}, Platform.Interval * 1000);   // trigger every defined secs
+		}, Platform.Interval * 1000);	// trigger every defined secs
 
 		Platform.on("close", function() {
 			if (Loop) {
@@ -96,6 +97,19 @@ module.exports = function(RED) {
 		RED.auth.needsPermission('devices.read'),
 		function(myRequest, myResponse) {
 			myResponse.json(Platform.Devices);
+		}
+	);
+
+	RED.httpAdmin.get(
+		"/languages",
+		RED.auth.needsPermission('languages.read'),
+		function(myRequest, myResponse) {
+			var options = {
+				root: __dirname + '/',
+				dotfiles: 'deny'
+			};
+
+			myResponse.sendFile('languages.json', options);
 		}
 	);
 

@@ -24,8 +24,7 @@ const BASE_CONFIG = {
 		version: '1.21',									// Info.plist CFBundleShortVersionString
 		build: '248',										// Info.plist CFBundleVersion
 		executable: 'Mobile Alerts',						// Info.plist CFBundleExecutable
-		bundle: 'de.synertronixx.remotemonitor',			// [[NSBundle mainBundle] bundleIdentifier]
-		lang: 'de',											// preferred language
+		bundle: 'de.synertronixx.remotemonitor'				// [[NSBundle mainBundle] bundleIdentifier]
 	}
 }
 
@@ -45,12 +44,13 @@ module.exports = {
 		}
 	
 		body = body.replace(/\$PHONEID\$/gi, myPlatform.PhoneID);						// set configured phone id...
-		body += '&timezoneoffset=' + (-1 * new Date().getTimezoneOffset());				// local offset to UTC time
-		body += '&timeampm=' + (myPlatform.Clock ? 'true' : 'false');					// 12h vs 24h clock
-		body += '&usecelsius=' + (myPlatform.Temperature ? 'false' : 'true');			// Celcius vs Fahrenheit
-		body += '&usemm=' + (myPlatform.Rain ? 'false' : 'true');						// mm va in
-		body += '&speedunit=' + myPlatform.Wind;										// wind speed (0: m/s, 1: km/h, 2: mph, 3: kn)
-		body += '&timestamp=' + parseInt(new Date(new Date().toUTCString()) / 1000); 	// current UTC timestamp
+		body += '&lang=' + myPlatform.Language;											// set preferred language
+		body += '&timezoneoffset=' + (-1 * new Date().getTimezoneOffset());				// set local offset to UTC time
+		body += '&timeampm=' + (myPlatform.Clock ? 'true' : 'false');					// set 12h vs 24h clock
+		body += '&usecelsius=' + (myPlatform.Temperature ? 'false' : 'true');			// set Celcius vs Fahrenheit
+		body += '&usemm=' + (myPlatform.Rain ? 'false' : 'true');						// set mm va in
+		body += '&speedunit=' + myPlatform.Wind;										// set wind speed (0: m/s, 1: km/h, 2: mph, 3: kn)
+		body += '&timestamp=' + parseInt(new Date(new Date().toUTCString()) / 1000); 	// set current UTC timestamp
 		
 		var md5 = body + 'uvh2r1qmbqk8dcgv0hc31a6l8s5cnb0ii7oglpfj'						// SALT for the MD5
 		md5 = md5.replace(/\-/gi, '');
