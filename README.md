@@ -74,3 +74,5 @@ Mobile Alerts Status will send a message per sensor. the msg.payload looks like:
 		}
 	]
 }`
+
+_Missing readings (e.g. due to low battery) may be returned as 43530 instead of e.g. NaN or zero. This behavior is by design of the Mobile Alerts API and not a bug of this node._
