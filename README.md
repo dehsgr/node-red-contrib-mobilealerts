@@ -75,4 +75,8 @@ Mobile Alerts Status will send a message per sensor. the msg.payload looks like:
 	]
 }`
 
-_Missing readings (e.g. due to low battery) may be returned as 43530 instead of e.g. NaN or zero. This behavior is by design of the Mobile Alerts API and not a bug of this node._
+## Special measurement values
+- If a sensor was not connected the value 43530 is returned.
+- If the measurement of a sensor was out of range the value 65295 is returned.
+
+Detailed information on special measurement values as well as some other parameters (c, tx, ts, alerts, ...) can be found in the Mobile Alerts API documentation: https://mobile-alerts.eu/info/public_server_api_documentation.pdf.
