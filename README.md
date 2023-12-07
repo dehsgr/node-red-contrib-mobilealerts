@@ -74,3 +74,9 @@ Mobile Alerts Status will send a message per sensor. the msg.payload looks like:
 		}
 	]
 }`
+
+## Special measurement values
+- If a sensor was not connected the value 43530 is returned.
+- If the measurement of a sensor was out of range the value 65295 is returned.
+
+Detailed information on special measurement values as well as some other parameters (c, tx, ts, alerts, ...) can be found in the Mobile Alerts API documentation: https://mobile-alerts.eu/info/public_server_api_documentation.pdf.
